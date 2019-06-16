@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+	id="WebApp_ID" version="3.1">
+	<display-name>travel</display-name>
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+		<welcome-file>index.htm</welcome-file>
+		<welcome-file>index.jsp</welcome-file>
+		<welcome-file>default.html</welcome-file>
+		<welcome-file>default.htm</welcome-file>
+		<welcome-file>default.jsp</welcome-file>
+	</welcome-file-list>
+
+	<!-- Spring 初始化开始 -->
+	<!-- 配置Spring的初始化文件的位置 -->
+	<context-param>
+		<!-- 名字不能变 -->
+		<param-name>contextConfigLocation</param-name>
+		<!-- 值是Spring的配置文件路径 -->
+		<!-- classpath: 表示类路径中查找Spring的配置文件 -->
+		<param-value>classpath:/spring/applicationContext*.xml</param-value>
+	</context-param>
+	<!-- 配置Spring的初始化监听器 -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	<!-- Spring 初始化结束 -->
+
+	<!-- 配置字符编码过滤器，解决乱码的问题 -->
+	<filter>
+		<filter-name>org.springframework.web.filter.CharacterEncodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<!-- 在Servlet 3.0以后，增加了异步请求的能力，要使用该能力，必须激活异步支持 -->
+		<async-supported>true</async-supported>
+	</filter>
+	<filter-mapping>
+		<filter-name>org.springframework.web.filter.CharacterEncodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>check-login</filter-name>
+		<filter-class>org.fkjava.travel.core.filter.CheckLoginFilter</filter-class>
+		<init-param>
+			<param-name>exclude</param-name>
+			<!-- 使用逗号分割多个不需要检查登录的URL规则 -->
+			<!-- 为了简单起见，检查的时候要求前匹配，前面精确、后面不考虑！ -->
+			<!-- 利用String类里面的startsWith方法，判断请求的URL是否以某个值开头的。 -->
+			<param-value>
+				/index.jsp,/security/login,/webjars/
+			</param-value>
+		</init-param>
+		<async-supported>true</async-supported>
+	</filter>
+	<filter-mapping>
+		<filter-name>check-login</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<filter>
+		<!-- InView : 在一个页面中，只打开一个EntityManager，也就是Hibernate的Session -->
+		<filter-name>OpenEntityManagerInView</filter-name>
+		<filter-class>org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter</filter-class>
+		<async-supported>true</async-supported>
+	</filter>
+	<filter-mapping>
+		<filter-name>OpenEntityManagerInView</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- 增加两个模块的Spring核心控制器的配置，每个模块一个！ -->
+	<servlet>
+		<!-- servlet-name不能随意写，需要有一个对相应的【admin-servlet.xml】文件 -->
+		<!-- 该文件默认访问WEB-INF目录下 -->
+		<servlet-name>admin</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<load-on-startup>0</load-on-startup>
+		<!-- 异步支持 -->
+		<async-supported>true</async-supported>
+		<!-- 使用Servlet 3.0的文件上传技术 -->
+		<multipart-config></multipart-config>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>admin</servlet-name>
+		<!-- /admin/作为命名空间来使用，只要是访问/admin开头的URL，都是管理子系统的！ -->
+		<url-pattern>/admin/*</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>core</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<load-on-startup>0</load-on-startup>
+		<async-supported>true</async-supported>
+		<multipart-config></multipart-config>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>core</servlet-name>
+		<url-pattern>/core/*</url-pattern>
+	</servlet-mapping>
+
+
+
+	<servlet>
+		<servlet-name>security</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<load-on-startup>0</load-on-startup>
+		<async-supported>true</async-supported>
+		<multipart-config></multipart-config>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>security</servlet-name>
+		<url-pattern>/security/*</url-pattern>
+	</servlet-mapping>
+	
+	
+	<servlet>
+		<servlet-name>commons</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<load-on-startup>0</load-on-startup>
+		<async-supported>true</async-supported>
+		<!-- 必须有multipart-config元素，否则无法使用Servlet 3.0的文件上传方式 -->
+		<!-- 不使用Servlet 3.0的文件上传方式，那么就必须再增加一些其他的jar文件 -->
+		<multipart-config></multipart-config>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>commons</servlet-name>
+		<url-pattern>/commons/*</url-pattern>
+	</servlet-mapping>
+</web-app>
